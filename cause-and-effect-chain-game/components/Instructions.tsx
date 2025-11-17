@@ -17,8 +17,8 @@ const LegendItem: React.FC<{ colorClass: string; label: string }> = ({ colorClas
 
 const stageInstructions = {
     video: "Watch the video. Then answer the questions.",
-    chain: "Click a CAUSE (red), then an EFFECT (blue). Click 'Make Connection'.",
-    analysis: "Read the story. Highlight CAUSES and EFFECTS.",
+    chain: "Follow the steps. Connect causes to effects.",
+    analysis: "Read the story carefully. Click 'Next' when ready.",
     write: "Build sentences using the words below."
 };
 

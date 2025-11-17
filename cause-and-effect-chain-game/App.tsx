@@ -10,7 +10,7 @@ import SuccessMessage from './components/SuccessMessage';
 import CausalChainDisplay from './components/CausalChainDisplay';
 import Tabs from './components/Tabs';
 import StageStepper from './components/StageStepper';
-import TextAnalysisStage from './components/TextAnalysisStage';
+import StoryReadingStage from './components/StoryReadingStage';
 import ParagraphBuilderStage from './components/ParagraphBuilderStage';
 import VideoComprehensionStage from './components/VideoComprehensionStage';
 import SOLOProgressIndicator from './components/SOLOProgressIndicator';
@@ -40,18 +40,28 @@ const GameInstance: React.FC<GameInstanceProps> = ({ levelKey }) => {
     const { elements, combos, initial, title, description, story, videoUrl, comprehensionQuestions } = currentLevel;
 
     const game = useCauseEffectGame(elements, combos, initial);
-    const [isGuidedMode, setIsGuidedMode] = useState(true); // Default to guided for EAL learners
 
     const availableStages = useMemo<Stage[]>(() => {
       const stages: Stage[] = [];
+
+      // Video first (if exists)
       if (videoUrl && comprehensionQuestions && comprehensionQuestions.length > 0) {
         stages.push({ id: stages.length + 1, title: 'Watch & Learn', component: 'video' });
       }
-      stages.push({ id: stages.length + 1, title: 'Build the Chain', component: 'chain' });
+
+      // Story BEFORE building (if exists)
       if (story) {
-        stages.push({ id: stages.length + 1, title: 'Analyze the Text', component: 'analysis' });
+        stages.push({ id: stages.length + 1, title: 'Read the Story', component: 'analysis' });
+      }
+
+      // Then build the chain (always guided)
+      stages.push({ id: stages.length + 1, title: 'Build the Chain', component: 'chain' });
+
+      // Finally write
+      if (story) {
         stages.push({ id: stages.length + 1, title: 'Write Your Paragraph', component: 'write' });
       }
+
       return stages;
     }, [videoUrl, comprehensionQuestions, story]);
 
@@ -108,86 +118,17 @@ const GameInstance: React.FC<GameInstanceProps> = ({ levelKey }) => {
             }
 
             {currentStageInfo?.component === 'chain' && (
-                <>
-                    {/* Mode Toggle */}
-                    <div className="flex justify-center mb-4">
-                        <div className="bg-white p-2 rounded-lg shadow border border-gray-200 inline-flex gap-2">
-                            <SimpleTooltip bmText="Mod Terbimbing - Belajar langkah demi langkah" enabled={true}>
-                                <button
-                                    onClick={() => setIsGuidedMode(true)}
-                                    className={`px-4 py-2 rounded font-semibold transition-all ${
-                                        isGuidedMode
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    🎓 Guided Mode
-                                </button>
-                            </SimpleTooltip>
-                            <SimpleTooltip bmText="Mod Bebas - Cuba sendiri" enabled={true}>
-                                <button
-                                    onClick={() => setIsGuidedMode(false)}
-                                    className={`px-4 py-2 rounded font-semibold transition-all ${
-                                        !isGuidedMode
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    🚀 Free Mode
-                                </button>
-                            </SimpleTooltip>
-                        </div>
-                    </div>
-
-                    {isGuidedMode ? (
-                        /* Guided Mode - Scaffolded learning */
-                        <GuidedMode
-                            elements={elements}
-                            validCombos={combos}
-                            onComplete={handleNextStage}
-                        />
-                    ) : (
-                        /* Free Mode - Original complex interface */
-                        <>
-                            <FeedbackBar message={game.feedback.message} type={game.feedback.type} />
-                            <SOLOProgressIndicator connections={game.connectionGroups} compact={false} />
-                            <GameBoard
-                                elements={elements}
-                                connectionGroups={game.connectionGroups}
-                                selectedCauses={game.selectedCauses}
-                                selectedEffect={game.selectedEffect}
-                                availableElements={game.availableElements}
-                                onElementClick={game.handleElementClick}
-                            />
-                            <ControlPanel
-                                elements={elements}
-                                selectedCauses={game.selectedCauses}
-                                selectedEffect={game.selectedEffect}
-                                connectionGroups={game.connectionGroups}
-                                onMakeConnection={game.makeConnection}
-                            />
-                            {isChainComplete && (
-                                <SuccessMessage
-                                    title="Chain Complete!"
-                                    buttonText={availableStages.length > currentStage ? `Next Stage: ${availableStages[currentStage].title}` : undefined}
-                                    onNext={availableStages.length > currentStage ? handleNextStage : undefined}
-                                >
-                                    You've successfully built the entire cause and effect chain!
-                                </SuccessMessage>
-                            )}
-                            <CausalChainDisplay elements={elements} connectionGroups={game.connectionGroups} />
-                        </>
-                    )}
-                </>
+                <GuidedMode
+                    elements={elements}
+                    validCombos={combos}
+                    onComplete={handleNextStage}
+                />
             )}
             
             {currentStageInfo?.component === 'analysis' && story && (
-                <TextAnalysisStage
+                <StoryReadingStage
                     story={story}
-                    elements={elements}
-                    combos={combos}
-                    onComplete={() => {}} // Can be used for tracking if needed
-                    goToNextStage={handleNextStage}
+                    onNext={handleNextStage}
                     nextStageTitle={availableStages.find(s => s.id === currentStage + 1)?.title}
                 />
             )}

@@ -16,6 +16,7 @@ interface GuidedStep {
   correctConnection: { causes: string[]; effect: string };
   wrongChoices?: string[]; // Optional wrong choices to present
   showLanguageAfter?: boolean; // Show connective phrase after correct connection
+  isDemo?: boolean; // If true, show as a completed example (tour mode)
 }
 
 /**
@@ -35,6 +36,21 @@ const GuidedMode: React.FC<GuidedModeProps> = ({ elements, validCombos, onComple
     const steps: GuidedStep[] = [];
     const effectIds = Object.keys(validCombos);
 
+    // Step 0: DEMO - Show an example connection first (tour mode)
+    if (effectIds.length > 0) {
+      const firstEffect = effectIds[0];
+      const firstCauses = validCombos[firstEffect].combos[0];
+
+      steps.push({
+        visibleElements: [...firstCauses, firstEffect],
+        instruction: 'Here is an example of cause and effect:',
+        instructionBM: 'Ini adalah contoh sebab dan akibat:',
+        correctConnection: { causes: firstCauses, effect: firstEffect },
+        showLanguageAfter: true,
+        isDemo: true
+      });
+    }
+
     // Step 1: First connection (forced - only 2 elements)
     if (effectIds.length > 0) {
       const firstEffect = effectIds[0];
@@ -42,8 +58,8 @@ const GuidedMode: React.FC<GuidedModeProps> = ({ elements, validCombos, onComple
 
       steps.push({
         visibleElements: [...firstCauses, firstEffect],
-        instruction: 'Connect these two:',
-        instructionBM: 'Hubungkan kedua-dua ini:',
+        instruction: 'Now you try. Connect these two:',
+        instructionBM: 'Sekarang anda cuba. Hubungkan kedua-dua ini:',
         correctConnection: { causes: firstCauses, effect: firstEffect },
         showLanguageAfter: true
       });
@@ -54,19 +70,25 @@ const GuidedMode: React.FC<GuidedModeProps> = ({ elements, validCombos, onComple
       const effectId = effectIds[i];
       const causes = validCombos[effectId].combos[0];
 
-      // Find a wrong choice (an element that's NOT a valid cause for this effect)
+      // Find wrong choices (elements that are NOT valid causes for this effect)
       const allElementIds = Object.keys(elements);
-      const wrongChoice = allElementIds.find(id =>
-        !causes.includes(id) &&
-        id !== effectId &&
-        !effectIds.slice(0, i).includes(id) // Not a previous effect
-      );
 
-      const previousEffects = effectIds.slice(0, i);
+      // Calculate how many wrong choices based on step number
+      // Early steps: 1 wrong choice, later steps: 2-3 wrong choices for genuine decision-making
+      const numWrongChoices = i <= 1 ? 1 : (i <= 3 ? 2 : 3);
+
+      const wrongChoices = allElementIds
+        .filter(id =>
+          !causes.includes(id) &&
+          id !== effectId &&
+          !effectIds.slice(0, i).includes(id) // Not a previous effect
+        )
+        .slice(0, numWrongChoices);
+
       const visibleElements = [
         ...causes,
         effectId,
-        ...(wrongChoice ? [wrongChoice] : [])
+        ...wrongChoices
       ];
 
       steps.push({
@@ -74,7 +96,7 @@ const GuidedMode: React.FC<GuidedModeProps> = ({ elements, validCombos, onComple
         instruction: `What happens next?`,
         instructionBM: 'Apa yang berlaku seterusnya?',
         correctConnection: { causes, effect: effectId },
-        wrongChoices: wrongChoice ? [wrongChoice] : undefined,
+        wrongChoices: wrongChoices.length > 0 ? wrongChoices : undefined,
         showLanguageAfter: true
       });
     }
@@ -198,15 +220,16 @@ const GuidedMode: React.FC<GuidedModeProps> = ({ elements, validCombos, onComple
             const element = elements[elementId];
             if (!element) return null;
 
-            const isSelected = selectedElements.includes(elementId);
+            // In demo mode, show all elements as connected
+            const isSelected = currentStep.isDemo ? true : selectedElements.includes(elementId);
             const isCause = element.type === ElementType.Cause || element.type === ElementType.EffectCause;
             const isEffect = element.type === ElementType.Effect || element.type === ElementType.EffectCause;
 
             return (
               <button
                 key={elementId}
-                onClick={() => handleElementClick(elementId)}
-                disabled={showFeedback}
+                onClick={() => !currentStep.isDemo && handleElementClick(elementId)}
+                disabled={showFeedback || currentStep.isDemo}
                 className={`
                   p-6 rounded-xl shadow-lg transition-all duration-200
                   min-w-[200px] max-w-[280px]
@@ -217,7 +240,8 @@ const GuidedMode: React.FC<GuidedModeProps> = ({ elements, validCombos, onComple
                   ${isCause && !isEffect ? 'bg-rose-100 border-2 border-rose-300' : ''}
                   ${isEffect && !isCause ? 'bg-sky-100 border-2 border-sky-300' : ''}
                   ${isCause && isEffect ? 'bg-purple-100 border-2 border-purple-300' : ''}
-                  ${showFeedback ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}
+                  ${showFeedback || currentStep.isDemo ? 'opacity-80' : 'cursor-pointer'}
+                  ${currentStep.isDemo ? 'cursor-default' : ''}
                 `}
               >
                 <div className="text-4xl mb-2 text-center">{element.emoji}</div>
@@ -230,22 +254,55 @@ const GuidedMode: React.FC<GuidedModeProps> = ({ elements, validCombos, onComple
         </div>
       </div>
 
-      {/* Check Button */}
+      {/* Demo Mode: Show the connection phrase */}
+      {currentStep.isDemo && (
+        <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-200">
+          <div className="text-center">
+            <span className="text-gray-700 font-medium">
+              {currentStep.correctConnection.causes.map(c => elements[c]?.text).join(' + ')}
+            </span>
+            <span className="text-purple-700 font-bold text-xl mx-3">
+              {validCombos[currentStep.correctConnection.effect]?.phrase || 'leads to'}
+            </span>
+            <span className="text-gray-700 font-medium">
+              {elements[currentStep.correctConnection.effect]?.text}
+            </span>
+          </div>
+          <p className="text-center text-sm text-gray-600 mt-3">
+            👆 This shows how a CAUSE leads to an EFFECT
+          </p>
+        </div>
+      )}
+
+      {/* Check Button / Next Button */}
       <div className="flex justify-center">
-        <button
-          onClick={handleCheck}
-          disabled={!canCheck || showFeedback}
-          className={`
-            px-8 py-4 rounded-lg font-bold text-lg
-            transition-all duration-300
-            ${canCheck && !showFeedback
-              ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }
-          `}
-        >
-          {showFeedback ? 'Checking...' : 'Check Connection'}
-        </button>
+        {currentStep.isDemo ? (
+          <SimpleTooltip bmText="Seterusnya" enabled={true}>
+            <button
+              onClick={() => {
+                setCurrentStepIndex(prev => prev + 1);
+              }}
+              className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+            >
+              Next: Try It Yourself →
+            </button>
+          </SimpleTooltip>
+        ) : (
+          <button
+            onClick={handleCheck}
+            disabled={!canCheck || showFeedback}
+            className={`
+              px-8 py-4 rounded-lg font-bold text-lg
+              transition-all duration-300
+              ${canCheck && !showFeedback
+                ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }
+            `}
+          >
+            {showFeedback ? 'Checking...' : 'Check Connection'}
+          </button>
+        )}
       </div>
 
       {/* Feedback */}
