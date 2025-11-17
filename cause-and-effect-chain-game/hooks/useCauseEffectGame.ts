@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { ConnectionGroup, ElementType, ElementsMap } from '../types';
+import { calculateSOLOLevel, getSOLOFeedback } from '../utils/soloTaxonomy';
 
 const areSetsEqual = (a: Set<string>, b: Set<string>): boolean => {
   if (a.size !== b.size) return false;
@@ -110,15 +111,20 @@ export const useCauseEffectGame = (
     const exactMatchCombo = validCombosForEffect.find(combo => areSetsEqual(new Set(combo), selectedCauses));
 
     if (exactMatchCombo) {
-      const newConnectionGroup: ConnectionGroup = { 
-        causes: selectedCausesArray, 
+      const newConnectionGroup: ConnectionGroup = {
+        causes: selectedCausesArray,
         effect: selectedEffect,
-        phrase: validCauseCombosData.phrase 
+        phrase: validCauseCombosData.phrase
       };
+
+      // Calculate SOLO level for this connection
+      const soloLevel = calculateSOLOLevel(newConnectionGroup, connectionGroups);
+      const soloFeedback = getSOLOFeedback(soloLevel, selectedCauses.size);
+
       setConnectionGroups(prev => [...prev, newConnectionGroup]);
       setAvailableElements(prev => new Set([...prev, selectedEffect]));
       setScore(prev => prev + 20 * selectedCauses.size);
-      setFeedback({ message: `🎉 Correct! You've connected all the causes for "${elements[selectedEffect]?.text}".`, type: 'success' });
+      setFeedback({ message: `🎉 Correct! ${soloFeedback}`, type: 'success' });
       setSelectedCauses(new Set());
       setSelectedEffect(null);
       return;

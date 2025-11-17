@@ -21,6 +21,22 @@
       animation-delay: 2s;
     }
 
+    /* FadeIn animation for tooltips */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.2s ease-out;
+    }
+
     /* Ensure backdrop filters work */
     @supports (backdrop-filter: blur(1px)) {
       .backdrop-blur-lg {
@@ -31,7 +47,6 @@
       }
     }
 </style>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gray-100">
   <div id="root"></div>

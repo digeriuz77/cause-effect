@@ -1,6 +1,5 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { useCauseEffectGame } from './hooks/useCauseEffectGame';
 import Header from './components/Header';
 import Instructions from './components/Instructions';
@@ -12,10 +11,10 @@ import CausalChainDisplay from './components/CausalChainDisplay';
 import Tabs from './components/Tabs';
 import StageStepper from './components/StageStepper';
 import TextAnalysisStage from './components/TextAnalysisStage';
-import SentenceBuilderStage from './components/SentenceBuilderStage';
+import ParagraphBuilderStage from './components/ParagraphBuilderStage';
 import VideoComprehensionStage from './components/VideoComprehensionStage';
+import SOLOProgressIndicator from './components/SOLOProgressIndicator';
 import { levelData } from './constants/levels';
-import AdminPanel from './components/AdminPanel';
 
 type LevelKey = keyof typeof levelData;
 
@@ -32,10 +31,9 @@ interface Stage {
 
 interface GameInstanceProps {
     levelKey: LevelKey;
-    onOpenAdmin: () => void;
 }
 
-const GameInstance: React.FC<GameInstanceProps> = ({ levelKey, onOpenAdmin }) => {
+const GameInstance: React.FC<GameInstanceProps> = ({ levelKey }) => {
     const currentLevel = levelData[levelKey];
     const { elements, combos, initial, title, description, story, videoUrl, comprehensionQuestions } = currentLevel;
     
@@ -83,7 +81,7 @@ const GameInstance: React.FC<GameInstanceProps> = ({ levelKey, onOpenAdmin }) =>
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-            <Header score={game.score} onReset={game.resetGame} title={title} onOpenAdmin={onOpenAdmin} />
+            <Header score={game.score} onReset={game.resetGame} title={title} />
             <StageStepper 
                 stages={availableStages}
                 currentStage={currentStage}
@@ -109,6 +107,7 @@ const GameInstance: React.FC<GameInstanceProps> = ({ levelKey, onOpenAdmin }) =>
             {currentStageInfo?.component === 'chain' && (
                 <>
                     <FeedbackBar message={game.feedback.message} type={game.feedback.type} />
+                    <SOLOProgressIndicator connections={game.connectionGroups} compact={false} />
                     <GameBoard
                         elements={elements}
                         connectionGroups={game.connectionGroups}
@@ -149,7 +148,7 @@ const GameInstance: React.FC<GameInstanceProps> = ({ levelKey, onOpenAdmin }) =>
             )}
 
             {currentStageInfo?.component === 'write' && (
-                <SentenceBuilderStage elements={elements} />
+                <ParagraphBuilderStage elements={elements} connections={game.connectionGroups} />
             )}
         </div>
     );
@@ -157,20 +156,13 @@ const GameInstance: React.FC<GameInstanceProps> = ({ levelKey, onOpenAdmin }) =>
 
 const App = () => {
     const [activeTab, setActiveTab] = useState<LevelKey>('storm');
-    const [showAdminPanel, setShowAdminPanel] = useState(false);
-    
-    const handleOpenAdmin = () => setShowAdminPanel(true);
 
     return (
         <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto">
                 <Tabs tabs={tabs} activeTab={activeTab} onTabClick={(id) => setActiveTab(id as LevelKey)} />
-                <GameInstance key={activeTab} levelKey={activeTab} onOpenAdmin={handleOpenAdmin} />
+                <GameInstance key={activeTab} levelKey={activeTab} />
             </div>
-            {showAdminPanel && createPortal(
-                <AdminPanel onClose={() => setShowAdminPanel(false)} />,
-                document.body
-            )}
         </div>
     );
 }
