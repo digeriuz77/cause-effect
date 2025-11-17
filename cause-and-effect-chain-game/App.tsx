@@ -14,6 +14,8 @@ import TextAnalysisStage from './components/TextAnalysisStage';
 import ParagraphBuilderStage from './components/ParagraphBuilderStage';
 import VideoComprehensionStage from './components/VideoComprehensionStage';
 import SOLOProgressIndicator from './components/SOLOProgressIndicator';
+import GuidedMode from './components/GuidedMode';
+import { SimpleTooltip } from './components/TranslationTooltip';
 import { levelData } from './constants/levels';
 
 type LevelKey = keyof typeof levelData;
@@ -36,9 +38,10 @@ interface GameInstanceProps {
 const GameInstance: React.FC<GameInstanceProps> = ({ levelKey }) => {
     const currentLevel = levelData[levelKey];
     const { elements, combos, initial, title, description, story, videoUrl, comprehensionQuestions } = currentLevel;
-    
+
     const game = useCauseEffectGame(elements, combos, initial);
-    
+    const [isGuidedMode, setIsGuidedMode] = useState(true); // Default to guided for EAL learners
+
     const availableStages = useMemo<Stage[]>(() => {
       const stages: Stage[] = [];
       if (videoUrl && comprehensionQuestions && comprehensionQuestions.length > 0) {
@@ -106,33 +109,75 @@ const GameInstance: React.FC<GameInstanceProps> = ({ levelKey }) => {
 
             {currentStageInfo?.component === 'chain' && (
                 <>
-                    <FeedbackBar message={game.feedback.message} type={game.feedback.type} />
-                    <SOLOProgressIndicator connections={game.connectionGroups} compact={false} />
-                    <GameBoard
-                        elements={elements}
-                        connectionGroups={game.connectionGroups}
-                        selectedCauses={game.selectedCauses}
-                        selectedEffect={game.selectedEffect}
-                        availableElements={game.availableElements}
-                        onElementClick={game.handleElementClick}
-                    />
-                    <ControlPanel
-                        elements={elements}
-                        selectedCauses={game.selectedCauses}
-                        selectedEffect={game.selectedEffect}
-                        connectionGroups={game.connectionGroups}
-                        onMakeConnection={game.makeConnection}
-                    />
-                    {isChainComplete && (
-                        <SuccessMessage
-                            title="Chain Complete!"
-                            buttonText={availableStages.length > currentStage ? `Next Stage: ${availableStages[currentStage].title}` : undefined}
-                            onNext={availableStages.length > currentStage ? handleNextStage : undefined}
-                        >
-                            You've successfully built the entire cause and effect chain!
-                        </SuccessMessage>
+                    {/* Mode Toggle */}
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-white p-2 rounded-lg shadow border border-gray-200 inline-flex gap-2">
+                            <SimpleTooltip bmText="Mod Terbimbing - Belajar langkah demi langkah" enabled={true}>
+                                <button
+                                    onClick={() => setIsGuidedMode(true)}
+                                    className={`px-4 py-2 rounded font-semibold transition-all ${
+                                        isGuidedMode
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    🎓 Guided Mode
+                                </button>
+                            </SimpleTooltip>
+                            <SimpleTooltip bmText="Mod Bebas - Cuba sendiri" enabled={true}>
+                                <button
+                                    onClick={() => setIsGuidedMode(false)}
+                                    className={`px-4 py-2 rounded font-semibold transition-all ${
+                                        !isGuidedMode
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    🚀 Free Mode
+                                </button>
+                            </SimpleTooltip>
+                        </div>
+                    </div>
+
+                    {isGuidedMode ? (
+                        /* Guided Mode - Scaffolded learning */
+                        <GuidedMode
+                            elements={elements}
+                            validCombos={combos}
+                            onComplete={handleNextStage}
+                        />
+                    ) : (
+                        /* Free Mode - Original complex interface */
+                        <>
+                            <FeedbackBar message={game.feedback.message} type={game.feedback.type} />
+                            <SOLOProgressIndicator connections={game.connectionGroups} compact={false} />
+                            <GameBoard
+                                elements={elements}
+                                connectionGroups={game.connectionGroups}
+                                selectedCauses={game.selectedCauses}
+                                selectedEffect={game.selectedEffect}
+                                availableElements={game.availableElements}
+                                onElementClick={game.handleElementClick}
+                            />
+                            <ControlPanel
+                                elements={elements}
+                                selectedCauses={game.selectedCauses}
+                                selectedEffect={game.selectedEffect}
+                                connectionGroups={game.connectionGroups}
+                                onMakeConnection={game.makeConnection}
+                            />
+                            {isChainComplete && (
+                                <SuccessMessage
+                                    title="Chain Complete!"
+                                    buttonText={availableStages.length > currentStage ? `Next Stage: ${availableStages[currentStage].title}` : undefined}
+                                    onNext={availableStages.length > currentStage ? handleNextStage : undefined}
+                                >
+                                    You've successfully built the entire cause and effect chain!
+                                </SuccessMessage>
+                            )}
+                            <CausalChainDisplay elements={elements} connectionGroups={game.connectionGroups} />
+                        </>
                     )}
-                    <CausalChainDisplay elements={elements} connectionGroups={game.connectionGroups} />
                 </>
             )}
             

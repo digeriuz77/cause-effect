@@ -16,10 +16,10 @@ const LegendItem: React.FC<{ colorClass: string; label: string }> = ({ colorClas
 );
 
 const stageInstructions = {
-    video: "Watch the video to learn about the topic. Then, answer the comprehension questions to check your understanding before moving on.",
-    chain: "Connect causes to effects to reveal how events create a chain reaction! Click one or more causes, then an effect, and hit 'Make Connection'.",
-    analysis: "Read the story and use the highlighters. The red words are connectors. Highlight the CAUSE before the red words and the EFFECT after them.",
-    write: "Use the word banks to build proper cause-and-effect sentences. Show your understanding of how one event leads to another!"
+    video: "Watch the video. Then answer the questions.",
+    chain: "Click a CAUSE (red), then an EFFECT (blue). Click 'Make Connection'.",
+    analysis: "Read the story. Highlight CAUSES and EFFECTS.",
+    write: "Build sentences using the words below."
 };
 
 
