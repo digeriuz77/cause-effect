@@ -7,60 +7,53 @@ import { ElementsMap, ElementType } from '../types';
 
 export const BRUNEI_ELEMENTS: ElementsMap = {
   'brunei-wealth': {
-    text: "Brunei had valuable resources (oil, timber, trade routes)",
+    text: "Brunei had valuable resources (oil, timber)",
     emoji: '💎🌴',
     type: ElementType.Cause,
     x: 50,
-    y: 200,
-  },
-  'sultan-power': {
-    text: "The Sultan ruled Brunei with full power",
-    emoji: '👑',
-    type: ElementType.Cause,
-    x: 50,
-    y: 350,
+    y: 300,
   },
   'british-interest': {
-    text: "Britain wanted to control Southeast Asia trade",
+    text: "Britain wanted to control trade in Southeast Asia",
     emoji: '🇬🇧🚢',
     type: ElementType.Cause,
     x: 50,
-    y: 500,
+    y: 450,
   },
   'treaty-1888': {
-    text: "Treaty of 1888 signed between Britain and Brunei",
+    text: "1888 Treaty signed (Britain 'protects' Brunei)",
     emoji: '📜🤝',
     type: ElementType.EffectCause,
     x: 450,
-    y: 350,
+    y: 375,
   },
   'resident-appointed': {
-    text: "British Resident appointed to 'advise' the Sultan",
+    text: "British Resident appointed to 'advise' Sultan",
     emoji: '🎩📋',
     type: ElementType.EffectCause,
     x: 850,
-    y: 200,
+    y: 300,
   },
-  'loss-of-power': {
-    text: "Sultan lost real decision-making power",
+  'sultan-loses-power': {
+    text: "Sultan loses real decision-making power",
     emoji: '👑❌',
     type: ElementType.EffectCause,
     x: 850,
-    y: 400,
+    y: 450,
   },
-  'british-control': {
-    text: "Britain controlled Brunei's economy and trade",
+  'british-control-economy': {
+    text: "Britain controls Brunei's economy and resources",
     emoji: '💰🇬🇧',
     type: ElementType.EffectCause,
     x: 1250,
-    y: 250,
+    y: 375,
   },
   'protectorate-status': {
-    text: "Brunei became a British Protectorate (not fully independent)",
-    emoji: '🏴󐁧󐁢',
+    text: "Brunei becomes a British Protectorate",
+    emoji: '🏴',
     type: ElementType.Effect,
     x: 1650,
-    y: 350,
+    y: 375,
   },
 };
 
@@ -73,22 +66,21 @@ export const BRUNEI_VALID_CAUSE_COMBOS: { [effectId: string]: { combos: string[]
     combos: [['treaty-1888']],
     phrase: 'resulted in',
   },
-  'loss-of-power': {
-    combos: [['treaty-1888', 'sultan-power']],
+  'sultan-loses-power': {
+    combos: [['resident-appointed']],
     phrase: 'meant that',
   },
-  'british-control': {
-    combos: [['resident-appointed']],
+  'british-control-economy': {
+    combos: [['sultan-loses-power']],
     phrase: 'allowed',
   },
   'protectorate-status': {
-    combos: [['british-control', 'loss-of-power']],
+    combos: [['british-control-economy']],
     phrase: 'establishing',
   },
 };
 
 export const BRUNEI_INITIAL_AVAILABLE_ELEMENTS = new Set([
   'brunei-wealth',
-  'sultan-power',
   'british-interest',
 ]);
