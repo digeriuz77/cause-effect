@@ -6,6 +6,11 @@ import { CIRCUITS_ELEMENTS, CIRCUITS_VALID_CAUSE_COMBOS, CIRCUITS_INITIAL_AVAILA
 import { MATH_LOGIC_ELEMENTS, MATH_LOGIC_VALID_CAUSE_COMBOS, MATH_LOGIC_INITIAL_AVAILABLE_ELEMENTS } from './mathLogic';
 import { CELL_ELEMENTS, CELL_VALID_CAUSE_COMBOS, CELL_INITIAL_AVAILABLE_ELEMENTS } from './cellDivision';
 import { ENGLISH_LOGIC_ELEMENTS, ENGLISH_LOGIC_VALID_CAUSE_COMBOS, ENGLISH_LOGIC_INITIAL_AVAILABLE_ELEMENTS } from './englishLogic';
+import { BRUNEI_ELEMENTS, BRUNEI_VALID_CAUSE_COMBOS, BRUNEI_INITIAL_AVAILABLE_ELEMENTS } from './bruneiResidential';
+import { PYTHAGORAS_ELEMENTS, PYTHAGORAS_VALID_CAUSE_COMBOS, PYTHAGORAS_INITIAL_AVAILABLE_ELEMENTS } from './pythagoras';
+import { GEORGE_AND_LENNIE_STORY } from '../stories/georgeAndLennie';
+import { BRUNEI_RESIDENTIAL_STORY } from '../stories/bruneiResidential';
+import { PYTHAGORAS_STORY } from '../stories/pythagoras';
 
 interface LevelData {
   elements: ElementsMap;
@@ -72,7 +77,23 @@ export const levelData: Record<string, LevelData> = {
       combos: ENGLISH_LOGIC_VALID_CAUSE_COMBOS,
       initial: ENGLISH_LOGIC_INITIAL_AVAILABLE_ELEMENTS,
       title: "Level 5: Why did George do it?",
-      description: "Analyze the climax of 'Of Mice and Men'. Use the text to build the strongest argument for George's final decision. Beware of misleading paths and incomplete conclusions!",
-      story: `Lennie's love for soft things and Curley’s wife being lonely and seeking conversation leads to the moment of Curley's wife letting him stroke her hair. Curley's wife letting him stroke her hair but this combined with Lennie not understanding his own strength tragically results in Lennie panicking when she tried to pull away. Lennie panicking when she tried to pull away tragically results in Lennie accidentally killing her. Lennie accidentally killing her means their dream of a farm being impossible. Lennie accidentally killing her and Curley wanting brutal revenge, not justice means Curley gathering men to hunt Lennie down. Curley gathering men to hunt Lennie down means George knowing what the mob would do to Lennie. George knowing what the mob would do to Lennie leads to George providing a final, tragic act of mercy. George providing a final, tragic act of mercy and their dream of a farm being impossible proving that George's action being a tragic mercy killing, an act of love to spare his friend from a brutal fate.`
+      description: "Read the story. Then think: Why did George shoot Lennie?",
+      story: GEORGE_AND_LENNIE_STORY
+  },
+  brunei: {
+      elements: BRUNEI_ELEMENTS,
+      combos: BRUNEI_VALID_CAUSE_COMBOS,
+      initial: BRUNEI_INITIAL_AVAILABLE_ELEMENTS,
+      title: "Level 6: The Brunei Residential System",
+      description: "How did Britain take control of Brunei?",
+      story: BRUNEI_RESIDENTIAL_STORY
+  },
+  pythagoras: {
+      elements: PYTHAGORAS_ELEMENTS,
+      combos: PYTHAGORAS_VALID_CAUSE_COMBOS,
+      initial: PYTHAGORAS_INITIAL_AVAILABLE_ELEMENTS,
+      title: "Level 7: Pythagoras Theorem",
+      description: "Discover how squares on a triangle lead to a² + b² = c²",
+      story: PYTHAGORAS_STORY
   }
 };
